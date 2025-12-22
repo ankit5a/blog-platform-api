@@ -215,16 +215,3 @@ Example:
 
 Give it a ⭐️ on GitHub and feel free to fork it!
 
-```
-
----
-
-## ✅ Next steps (optional but powerful)
-If you want, I can:
-- Add **slug-based URLs**
-- Add **pagination**
-- Add **deployment guide**
-- Improve **error handling middleware**
-
-Just tell me 🚀
-```
