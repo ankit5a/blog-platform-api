@@ -11,7 +11,7 @@ const postSchema = new mongoose.Schema(
       type: String,
       required: true,
       unique: true,
-      lowercase: true,
+      index: true,
     },
     content: {
       type: String,
@@ -26,9 +26,15 @@ const postSchema = new mongoose.Schema(
       default: [],
     },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
+
+/* TEXT SEARCH + SLUG INDEX */
+postSchema.index({ slug: 1 });
+postSchema.index({
+  title: "text",
+  content: "text",
+  category: "text",
+});
 
 module.exports = mongoose.model("Post", postSchema);

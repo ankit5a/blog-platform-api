@@ -1,27 +1,12 @@
 const Post = require("../models/Post");
-
-/* GENERATE SLUT */
-const generateSlug = (title) => {
-  return title
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)+/g, "");
-};
+const { generateUniqueSlug } = require("../utils/slug");
 
 /* CREATE POST */
 exports.createPost = async (req, res) => {
   try {
     const { title } = req.body;
 
-    const slug = generateSlug(title);
-
-    const existingPost = await Post.findOne({ slug });
-    if (existingPost) {
-      return res
-        .status(400)
-        .json({ message: "Post with this title already exists" });
-    }
+    const slug = await generateUniqueSlug(title);
 
     const post = await Post.create({
       ...req.body,
@@ -63,7 +48,7 @@ exports.getPostById = async (req, res) => {
   res.status(200).json(post);
 };
 
-/* GET POST BY SLUG */
+/* GET POST BY SLUG (PUBLIC) */
 exports.getPostBySlug = async (req, res) => {
   const post = await Post.findOne({ slug: req.params.slug });
 
@@ -76,7 +61,13 @@ exports.getPostBySlug = async (req, res) => {
 
 /* UPDATE POST */
 exports.updatePost = async (req, res) => {
-  const post = await Post.findByIdAndUpdate(req.params.id, req.body, {
+  const updates = { ...req.body };
+
+  if (req.body.title) {
+    updates.slug = await generateUniqueSlug(req.body.title);
+  }
+
+  const post = await Post.findByIdAndUpdate(req.params.id, updates, {
     new: true,
     runValidators: true,
   });

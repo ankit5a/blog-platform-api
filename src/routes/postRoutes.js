@@ -12,10 +12,12 @@ const {
 router.post("/", createPost);
 router.get("/", getPosts);
 
-router.get("/id/:id", getPostById);
-router.get("/slug/:slug", getPostBySlug);
+/* PUBLIC */
+router.get("/:slug", getPostBySlug);
 
-router.put("/:id", updatePost);
-router.delete("/:id", deletePost);
+/* INTERNAL / ADMIN */
+router.get("/id/:id", getPostById);
+router.put("/id/:id", updatePost);
+router.delete("/id/:id", deletePost);
 
 module.exports = router;
