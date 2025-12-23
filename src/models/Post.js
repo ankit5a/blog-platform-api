@@ -7,6 +7,12 @@ const postSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    slug: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+    },
     content: {
       type: String,
       required: true,
