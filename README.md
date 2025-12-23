@@ -1,5 +1,3 @@
----
-
 # Blog API – Node.js, Express & MongoDB
 
 A RESTful Blog API built using **Node.js**, **Express**, and **MongoDB (Atlas)**.
@@ -7,8 +5,8 @@ The API supports **SEO-friendly slug-based URLs**, full CRUD operations, and sea
 
 This project follows **real-world backend design patterns**, where:
 
-* **Slugs are the canonical public identifiers**
-* **MongoDB IDs are used internally for admin operations**
+- **Slugs are the canonical public identifiers**
+- **MongoDB IDs are used internally for admin operations**
 
 ---
 
@@ -267,5 +265,3 @@ Used for admin/debug purposes.
 ## ⭐️ If you like this project
 
 Give it a ⭐️ on GitHub and feel free to fork it!
-
----
