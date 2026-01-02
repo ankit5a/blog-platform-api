@@ -8,16 +8,16 @@ const {
   updatePost,
   deletePost,
 } = require("../controllers/postControllers");
-
-router.post("/", createPost);
-router.get("/", getPosts);
+const { protect, adminOnly } = require("../middleware/auth");
 
 /* PUBLIC */
+router.get("/", getPosts);
 router.get("/:slug", getPostBySlug);
+router.get("/id/:id", getPostById);
 
 /* INTERNAL / ADMIN */
-router.get("/id/:id", getPostById);
-router.put("/id/:id", updatePost);
-router.delete("/id/:id", deletePost);
+router.post("/", protect, adminOnly, createPost);
+router.put("/id/:id", protect, adminOnly, updatePost);
+router.delete("/id/:id", protect, adminOnly, deletePost);
 
 module.exports = router;

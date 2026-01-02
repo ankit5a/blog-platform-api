@@ -10,8 +10,7 @@ const postSchema = new mongoose.Schema(
     slug: {
       type: String,
       required: true,
-      unique: true,
-      index: true,
+      unique: true, // enough for index
     },
     content: {
       type: String,
@@ -29,8 +28,7 @@ const postSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-/* TEXT SEARCH + SLUG INDEX */
-postSchema.index({ slug: 1 });
+/* TEXT SEARCH INDEX */
 postSchema.index({
   title: "text",
   content: "text",
