@@ -1,16 +1,21 @@
 # Blog API – Node.js, Express & MongoDB
 
 A RESTful Blog API built using **Node.js**, **Express**, and **MongoDB (Atlas)**.
-The API supports **SEO-friendly slug-based URLs**, full CRUD operations, and search functionality.
+
+The API supports **SEO-friendly slug-based URLs**, **JWT-based authentication**, **role-based authorization**, full CRUD operations, and search functionality.
 
 This project follows **real-world backend design patterns**, where:
 
 - **Slugs are the canonical public identifiers**
 - **MongoDB IDs are used internally for admin operations**
+- **Protected routes require authentication**
+- **Admin-only actions are enforced via authorization**
 
 ---
 
 ## 🚀 Features
+
+### 📝 Blog Features
 
 - Create blog posts with **auto-generated unique slugs**
 - Fetch blog posts using **slug-based URLs (SEO-friendly)**
@@ -19,7 +24,24 @@ This project follows **real-world backend design patterns**, where:
 - Search blog posts by title, content, or category
 - Update blog posts (slug auto-updates if title changes)
 - Delete blog posts
+
+### 🔐 Authentication & Authorization
+
+- User registration & login
+- Password hashing using **bcrypt**
+- JWT-based authentication
+- Role-based access control:
+
+  - `user`
+  - `admin`
+
+- Protected admin routes
+- Public vs internal route separation
+
+### 🧱 Infrastructure
+
 - MongoDB Atlas integration
+- Mongoose schema validation & indexing
 - Proper REST conventions & HTTP status codes
 
 ---
@@ -29,6 +51,7 @@ This project follows **real-world backend design patterns**, where:
 - **Backend:** Node.js, Express.js
 - **Database:** MongoDB (Atlas)
 - **ODM:** Mongoose
+- **Authentication:** JWT, bcrypt
 - **Tools:** Postman, Git
 
 ---
@@ -40,11 +63,17 @@ This project follows **real-world backend design patterns**, where:
 ├── config/
 │   └── db.js
 ├── controllers/
-│   └── postControllers.js
+│   ├── postControllers.js
+│   └── authController.js
+├── middleware/
+│   ├── authMiddleware.js
+│   └── roleMiddleware.js
 ├── models/
-│   └── Post.js
+│   ├── Post.js
+│   └── User.js
 ├── routes/
-│   └── postRoutes.js
+│   ├── postRoutes.js
+│   └── authRoutes.js
 ├── utils/
 │   └── slug.js
 ├── .env
@@ -62,6 +91,7 @@ Create a `.env` file in the root directory:
 ```env
 PORT=3001
 MONGO_URI=your_mongodb_atlas_connection_string
+JWT_SECRET=your_super_secret_key
 ```
 
 ⚠️ **Never commit `.env` to GitHub**
@@ -113,35 +143,78 @@ http://localhost:3001
 
 ---
 
-## 📌 API Endpoints
+## 🔐 Authentication Endpoints
 
-### ➕ Create Blog Post
+### 📝 Register User
 
-**POST** `/posts`
+**POST** `/auth/register`
 
 ```json
 {
-  "title": "My First Blog Post",
-  "content": "This is the content of my first blog post.",
-  "category": "Technology",
-  "tags": ["Tech", "Programming"]
+  "name": "Ankit",
+  "email": "ankit@example.com",
+  "password": "password123"
 }
 ```
 
-🔹 The slug is **automatically generated and stored**
-🔹 Slug uniqueness is guaranteed
-
 **Response:** `201 Created`
+
+---
+
+### 🔑 Login User
+
+**POST** `/auth/login`
+
+```json
+{
+  "email": "ankit@example.com",
+  "password": "password123"
+}
+```
+
+**Response:**
+
+```json
+{
+  "token": "JWT_TOKEN_HERE"
+}
+```
+
+---
+
+### 🧪 Using Token in Postman
+
+Add header:
+
+```
+Authorization: Bearer <JWT_TOKEN>
+```
+
+Required for **protected/admin routes**.
+
+---
+
+## 📌 Blog API Endpoints
+
+### 🌍 Get Single Blog Post (PUBLIC – Slug-based)
+
+**GET** `/posts/:slug`
+
+Example:
+
+```
+/posts/my-first-blog-post
+```
+
+✅ Public
+✅ SEO-friendly
+✅ No authentication required
 
 ---
 
 ### 📄 Get All Blog Posts
 
 **GET** `/posts`
-
-Returns all blog posts.
-
-**Response:** `200 OK`
 
 ---
 
@@ -157,70 +230,49 @@ Searches across:
 
 ---
 
-### 🌍 Get Single Blog Post (PUBLIC – Slug-based)
-
-**GET** `/posts/:slug`
-
-Example:
-
-```
-/posts/my-first-blog-post
-```
-
-This is the **canonical public endpoint** used by the frontend and for SEO.
-
-**Response:** `200 OK` or `404 Not Found`
-
----
-
-### 🛠 Get Single Blog Post (INTERNAL – ID-based)
+### 🛠 Get Single Blog Post (ADMIN – ID-based)
 
 **GET** `/posts/id/:id`
 
-Example:
-
-```
-/posts/id/694821893e46e12943c5e0cb
-```
-
-Used for admin/debug purposes.
+🔐 Requires authentication
+🛡 Admin only
 
 ---
 
-### ✏️ Update Blog Post (INTERNAL)
+### ➕ Create Blog Post (ADMIN)
+
+**POST** `/posts`
+
+🔐 Requires authentication
+🛡 Admin only
+
+---
+
+### ✏️ Update Blog Post (ADMIN)
 
 **PUT** `/posts/id/:id`
 
-```json
-{
-  "title": "Updated Blog Title",
-  "content": "Updated content",
-  "category": "Technology",
-  "tags": ["Node", "MongoDB"]
-}
-```
-
-🔹 If the title changes, the slug is **automatically regenerated**
-🔹 Slug uniqueness is preserved
-
-**Response:** `200 OK`
+🔐 Requires authentication
+🛡 Admin only
+🔁 Slug auto-updates if title changes
 
 ---
 
-### ❌ Delete Blog Post (INTERNAL)
+### ❌ Delete Blog Post (ADMIN)
 
 **DELETE** `/posts/id/:id`
 
-**Response:** `204 No Content`
+🔐 Requires authentication
+🛡 Admin only
 
 ---
 
 ## 🔑 Slug Behavior (Important)
 
 - Slugs are generated from the title
-- Slugs are **URL-safe and lowercase**
-- Slugs are **unique**
-- Duplicate titles generate slugs like:
+- Slugs are lowercase and URL-safe
+- Slugs are unique
+- Duplicate titles generate:
 
   ```
   how-to-learn-node
@@ -235,23 +287,23 @@ Used for admin/debug purposes.
 
 ## 🧠 Learning Outcomes
 
-- RESTful API design with Express
+- JWT-based authentication in Express
+- Role-based authorization (RBAC)
+- Secure password handling with bcrypt
 - Slug-based URL architecture (SEO-friendly)
-- MongoDB CRUD operations
-- Text search with MongoDB indexes
-- Separation of public vs internal routes
-- Proper error handling & status codes
-- Clean project structure
+- MongoDB indexing & text search
+- Clean separation of public vs protected routes
+- Scalable backend project structure
 
 ---
 
 ## 🔮 Future Improvements
 
-- Pagination
-- Cursor-based pagination (infinite scroll)
-- Authentication & authorization
+- Pagination & cursor-based pagination
+- Refresh tokens
 - API rate limiting
 - Slug history & redirects (SEO-safe)
+- User profile management
 - Deployment (Render / Railway)
 
 ---
